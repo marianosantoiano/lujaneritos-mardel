@@ -292,7 +292,7 @@
 <script>
 const THANKS_KEY = 'lujaneritos:last-thanks';
 const GOAL = 436000; // pesos, 436 km
-let current = 200000; // TEST - borrar después
+let current = 0;
 
 const raisedValue = document.getElementById('raisedValue');
 const raisedSub = document.getElementById('raisedSub');
@@ -402,12 +402,10 @@ async function checkNewDonation(){
   }catch(e){}
 }
 
-// TEST - load() comentado para ver el micro en posición
-// load();
-render(); // TEST
-// checkNewDonation();
-// setInterval(load, 30000);
-// setInterval(checkNewDonation, 5000);
+load();
+checkNewDonation();
+setInterval(load, 30000);
+setInterval(checkNewDonation, 5000);
 </script>
 </body>
 </html>
