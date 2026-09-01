@@ -257,6 +257,7 @@
   </div>
   -->
 
+  <!--
   <button class="cta" id="mainCta">💙 Quiero ayudar con km al equipo</button>
   <div class="refresh-row">Actualizado por la última familia que donó · <button id="refreshBtn">actualizar ahora</button></div>
 
@@ -265,6 +266,7 @@
     <div><span class="ic">✅</span>100% transparente</div>
     <div><span class="ic">🤝</span>Cada km nos acerca</div>
   </div>
+  -->
   <div class="final-line">⭐ ¡Cada kilómetro nos acerca a nuestro sueño! ⭐</div>
 </div>
 
@@ -332,7 +334,8 @@ async function load(){
   render();
 }
 
-document.getElementById('refreshBtn').addEventListener('click', load);
+const refreshBtnEl = document.getElementById('refreshBtn');
+if(refreshBtnEl) refreshBtnEl.addEventListener('click', load);
 
 // Donation tier modal
 const overlay     = document.getElementById('overlay');
@@ -358,8 +361,10 @@ if(tiersEl) tiersEl.addEventListener('click', (e)=>{
   if(t.id === 'otherTier') openModal(null);
   else openModal(Number(t.dataset.amt));
 });
-document.getElementById('mainCta').addEventListener('click', ()=>window.open('https://mpago.la/1cnEEqf','_blank'));
-document.getElementById('closeModal').addEventListener('click', ()=>overlay.classList.remove('show'));
+const mainCtaEl = document.getElementById('mainCta');
+if(mainCtaEl) mainCtaEl.addEventListener('click', ()=>window.open('https://mpago.la/1cnEEqf','_blank'));
+const closeModalEl = document.getElementById('closeModal');
+if(closeModalEl) closeModalEl.addEventListener('click', ()=>overlay.classList.remove('show'));
 document.getElementById('copyAlias').addEventListener('click', ()=>{
   navigator.clipboard.writeText('caminoamardelplata');
   const b = document.getElementById('copyAlias');
