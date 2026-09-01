@@ -100,12 +100,13 @@
   .flag{position:absolute;bottom:12px;right:-2px;font-size:20px;}
   .pin-start{position:absolute;bottom:12px;left:-4px;font-size:18px;}
   .bus{
-    position:absolute;bottom:16px;left:0;
+    position:absolute;bottom:75px;left:0;
     transform:translateX(-6px);
     transition:left 1.1s cubic-bezier(.34,1.4,.64,1);
     width:auto;
+    height:5px;
   }
-  .exhaust-wrap{position:absolute;bottom:24px;left:2px;}
+  .exhaust-wrap{position:absolute;bottom:40px;left:2px;}
   .smoke{position:absolute;border-radius:50%;background:#bbb;bottom:0;left:0;}
   @keyframes smokeUp{
     0%  {opacity:.7;transform:translate(0,0)         scale(.5);}
@@ -290,39 +291,50 @@
 <button class="admin-fab" id="adminBtn" title="Actualizar recaudación">⚙</button>
 
 <script>
-const THANKS_KEY = 'lujaneritos:last-thanks';
+const BIN_ID  = '6a973571f5f4af5e295e2708';
+const BIN_KEY = '$2a$10$qM60/XaciWMsIZ7TDyf2guEIXgn9dQSaKmSSfmIVxKlrmeo4dmaaW';
+const BIN_URL = 'https://api.jsonbin.io/v3/b/' + BIN_ID;
 const GOAL = 436000; // pesos, 436 km
 let current = 0;
+let lastAt = 0;
 
 const raisedValue = document.getElementById('raisedValue');
-const raisedSub = document.getElementById('raisedSub');
-const bus = document.getElementById('bus');
+const raisedSub   = document.getElementById('raisedSub');
+const bus         = document.getElementById('bus');
 
 function fmt(n){ return '$' + Math.round(n).toLocaleString('es-AR'); }
 
 function render(){
-  const km = Math.min(436, Math.round(current/1000));
-  const pct = Math.min(100, (current/GOAL)*100);
+  const km  = Math.min(436, Math.round(current / 1000));
+  const pct = Math.min(100, (current / GOAL) * 100);
   raisedValue.textContent = fmt(current);
-  raisedSub.textContent = km.toLocaleString('es-AR') + ' km de 436 km — ¡vamos que se puede!';
-  bus.style.left = 'calc(' + pct + '% - ' + (pct*0.64) + 'px)';
+  raisedSub.textContent   = km.toLocaleString('es-AR') + ' km de 436 km — ¡vamos que se puede!';
+  bus.style.left = 'calc(' + pct + '% - ' + (pct * 0.64) + 'px)';
 }
 
 async function load(){
   try{
-    const res = await window.storage.get('lujaneritos:progress', true);
-    current = res && res.value ? JSON.parse(res.value).recaudado : 0;
-  }catch(e){
-    current = 0;
-  }
+    const res  = await fetch(BIN_URL + '/latest', {
+      headers: { 'X-Master-Key': BIN_KEY }
+    });
+    const json = await res.json();
+    const rec  = json.record || {};
+    current = rec.recaudado || 0;
+    // Mostrar gracias a otros visitantes cuando alguien donó
+    if(rec.lastAt && rec.lastAt > lastAt){
+      const isFirst = lastAt === 0;
+      lastAt = rec.lastAt;
+      if(!isFirst && rec.lastMonto) showThanks(rec.lastMonto);
+    }
+  }catch(e){ /* sin conexión, mantiene valor anterior */ }
   render();
 }
 
 document.getElementById('refreshBtn').addEventListener('click', load);
 
-// Donation tier modal (informational — real money moves via MP alias)
-const overlay = document.getElementById('overlay');
-const modalAmt = document.getElementById('modalAmt');
+// Donation tier modal
+const overlay     = document.getElementById('overlay');
+const modalAmt    = document.getElementById('modalAmt');
 const customInput = document.getElementById('customAmtInput');
 
 function openModal(amt){
@@ -340,10 +352,10 @@ document.getElementById('tiers').addEventListener('click', (e)=>{
   const t = e.target.closest('.tier');
   if(!t) return;
   if(t.dataset.link){ window.open(t.dataset.link, '_blank'); return; }
-  if(t.id === 'otherTier'){ openModal(null); }
-  else { openModal(Number(t.dataset.amt)); }
+  if(t.id === 'otherTier') openModal(null);
+  else openModal(Number(t.dataset.amt));
 });
-document.getElementById('mainCta').addEventListener('click', ()=>window.open('https://mpago.la/1cnEEqf', '_blank'));
+document.getElementById('mainCta').addEventListener('click', ()=>window.open('https://mpago.la/1cnEEqf','_blank'));
 document.getElementById('closeModal').addEventListener('click', ()=>overlay.classList.remove('show'));
 document.getElementById('copyAlias').addEventListener('click', ()=>{
   navigator.clipboard.writeText('caminoamardelplata');
@@ -352,22 +364,25 @@ document.getElementById('copyAlias').addEventListener('click', ()=>{
   setTimeout(()=>b.textContent='Copiar alias', 1500);
 });
 
-// Admin: manual update after confirming a real MP transfer
+// Admin: confirmar transferencia real de Mercado Pago
 document.getElementById('adminBtn').addEventListener('click', async ()=>{
   const pass = prompt('Clave de familia organizadora:');
-  if(pass !== 'dato22') { if(pass!==null) alert('Clave incorrecta.'); return; }
+  if(pass !== 'dato22'){ if(pass !== null) alert('Clave incorrecta.'); return; }
   const add = prompt('¿Cuánto se confirmó por Mercado Pago? (en pesos)');
   const num = Number(add);
-  if(!add || isNaN(num) || num<=0) return;
+  if(!add || isNaN(num) || num <= 0) return;
   current += num;
   try{
-    await window.storage.set('lujaneritos:progress', JSON.stringify({recaudado: current}), true);
-    await window.storage.set(THANKS_KEY, JSON.stringify({
-      monto: num,
-      at: Date.now()
-    }), true);
+    await fetch(BIN_URL, {
+      method:  'PUT',
+      headers: { 'Content-Type': 'application/json', 'X-Master-Key': BIN_KEY },
+      body:    JSON.stringify({ recaudado: current, lastMonto: num, lastAt: Date.now() })
+    });
   }catch(e){
     alert('No se pudo guardar. Probá de nuevo.');
+    current -= num;
+    render();
+    return;
   }
   render();
   showThanks(num);
@@ -388,24 +403,8 @@ document.getElementById('closeThank').addEventListener('click', ()=>{
   thankOverlay.classList.remove('show');
 });
 
-async function checkNewDonation(){
-  try{
-    const res = await window.storage.get(THANKS_KEY, true);
-    if(!res || !res.value) return;
-    const data = JSON.parse(res.value);
-    const seen = Number(sessionStorage.getItem(THANKS_KEY) || 0);
-    if(data.at && data.at > seen){
-      sessionStorage.setItem(THANKS_KEY, String(data.at));
-      showThanks(Number(data.monto) || 0);
-      load();
-    }
-  }catch(e){}
-}
-
 load();
-checkNewDonation();
-setInterval(load, 30000);
-setInterval(checkNewDonation, 5000);
+setInterval(load, 30000); // refresca cada 30 seg para todos los visitantes
 </script>
 </body>
 </html>
