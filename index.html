@@ -94,10 +94,23 @@
     background:var(--road);border-radius:3px;
     overflow:hidden;
   }
+  @keyframes barberpole{
+    from{ background-position: 0 0; }
+    to  { background-position: 20px 0; }
+  }
   .road-fill{
     position:absolute;top:0;left:0;height:100%;width:0%;
-    background:var(--navy);border-radius:3px;
+    border-radius:3px;
     transition:width 1.1s cubic-bezier(.34,1.4,.64,1);
+    background-image: repeating-linear-gradient(
+      115deg,
+      var(--red)   0px,
+      var(--red)   8px,
+      #fff         8px,
+      #fff         14px
+    );
+    background-size: 20px 100%;
+    animation: barberpole 0.5s linear infinite;
   }
   .road::before{
     content:"";position:absolute;top:-2px;left:0;right:0;height:2px;
