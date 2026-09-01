@@ -350,7 +350,8 @@ function openModal(amt){
   overlay.classList.add('show');
 }
 
-document.getElementById('tiers').addEventListener('click', (e)=>{
+const tiersEl = document.getElementById('tiers');
+if(tiersEl) tiersEl.addEventListener('click', (e)=>{
   const t = e.target.closest('.tier');
   if(!t) return;
   if(t.dataset.link){ window.open(t.dataset.link, '_blank'); return; }
