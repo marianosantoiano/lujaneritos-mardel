@@ -194,11 +194,26 @@
     font-size:15px;font-family:'Nunito';font-weight:700;margin-top:8px;
   }
 
-  .admin-fab{
-    position:fixed;bottom:14px;right:14px;width:30px;height:30px;
-    border-radius:50%;background:rgba(23,59,112,.15);color:var(--navy);
-    border:none;font-size:13px;cursor:pointer;z-index:40;
+  .admin-panel{
+    margin:24px 20px 0;
+    background:#fff;border-radius:14px;
+    border:2px dashed var(--navy);
+    padding:16px;
   }
+  .admin-panel h3{
+    font-family:'Fredoka';font-size:15px;color:var(--navy);margin:0 0 12px;
+  }
+  .admin-panel input{
+    width:100%;border:1.5px solid #ccd0d8;border-radius:8px;
+    padding:9px 12px;font-size:14px;font-family:'Nunito';margin-bottom:8px;
+    box-sizing:border-box;
+  }
+  .admin-panel button.submit-btn{
+    width:100%;background:var(--navy);color:#fff;border:none;border-radius:8px;
+    padding:10px;font-family:'Fredoka';font-weight:600;font-size:15px;cursor:pointer;
+  }
+  .admin-panel button.submit-btn:active{opacity:.85;}
+  .admin-msg{font-size:12px;margin-top:8px;font-weight:700;text-align:center;min-height:16px;}
 </style>
 </head>
 <body>
@@ -292,7 +307,13 @@
   </div>
 </div>
 
-<button class="admin-fab" id="adminBtn" title="Actualizar recaudación">⚙</button>
+  <div class="admin-panel">
+    <h3>🔑 Cargar monto confirmado</h3>
+    <input type="password" id="adminPass" placeholder="Clave de responsable">
+    <input type="number" id="adminMonto" placeholder="Monto confirmado ($)" min="1">
+    <button class="submit-btn" id="adminBtn">Sumar al total</button>
+    <div class="admin-msg" id="adminMsg"></div>
+  </div>
 
 <script>
 const BIN_ID  = '6a973571f5f4af5e295e2708';
@@ -374,11 +395,14 @@ document.getElementById('copyAlias').addEventListener('click', ()=>{
 
 // Admin: confirmar transferencia real de Mercado Pago
 document.getElementById('adminBtn').addEventListener('click', async ()=>{
-  const pass = prompt('Clave de familia organizadora:');
-  if(pass !== 'dato22'){ if(pass !== null) alert('Clave incorrecta.'); return; }
-  const add = prompt('¿Cuánto se confirmó por Mercado Pago? (en pesos)');
-  const num = Number(add);
-  if(!add || isNaN(num) || num <= 0) return;
+  const passEl  = document.getElementById('adminPass');
+  const montoEl = document.getElementById('adminMonto');
+  const msgEl   = document.getElementById('adminMsg');
+  const pass = passEl.value.trim();
+  const num  = Number(montoEl.value);
+  msgEl.style.color = 'var(--red)';
+  if(pass !== 'dato22'){ msgEl.textContent = 'Clave incorrecta.'; return; }
+  if(!num || num <= 0){ msgEl.textContent = 'Ingresá un monto válido.'; return; }
   current += num;
   try{
     await fetch(BIN_URL, {
@@ -387,11 +411,16 @@ document.getElementById('adminBtn').addEventListener('click', async ()=>{
       body:    JSON.stringify({ recaudado: current, lastMonto: num, lastAt: Date.now() })
     });
   }catch(e){
-    alert('No se pudo guardar. Probá de nuevo.');
+    msgEl.textContent = 'No se pudo guardar. Probá de nuevo.';
     current -= num;
     render();
     return;
   }
+  passEl.value  = '';
+  montoEl.value = '';
+  msgEl.style.color = 'green';
+  msgEl.textContent = '¡Listo! Se sumaron $' + num.toLocaleString('es-AR') + ' al total.';
+  setTimeout(()=>msgEl.textContent='', 4000);
   render();
   showThanks(num);
 });
