@@ -230,7 +230,7 @@
   <div class="meta-row">
     <div class="meta-card">
       <div class="label">🎯 Meta</div>
-      <div class="value">$4.000.000</div>
+      <div class="value">438 km</div>
     </div>
     <div class="meta-card red">
       <div class="label">📍 Equivale</div>
@@ -241,7 +241,7 @@
   <div class="progress-panel">
     <div class="raised-label">Recaudado</div>
     <div class="raised-value" id="raisedValue">$0</div>
-    <div class="raised-sub" id="raisedSub">0 km de 436 km — ¡vamos que se puede!</div>
+    <div class="raised-sub" id="raisedSub">0 km de 438 km — ¡vamos que se puede!</div>
 
     <div class="road-area">
       <div class="pin-start">📍</div>
@@ -256,7 +256,7 @@
       </div>
     </div>
     <div class="km-scale">
-      <span>KM 0</span><span>109</span><span>218</span><span>327</span><span>KM 436</span>
+      <span>KM 0</span><span>110</span><span>219</span><span>329</span><span>KM 438</span>
     </div>
   </div>
 
@@ -319,7 +319,7 @@
 const BIN_ID  = '6a973571f5f4af5e295e2708';
 const BIN_KEY = '$2a$10$qM60/XaciWMsIZ7TDyf2guEIXgn9dQSaKmSSfmIVxKlrmeo4dmaaW';
 const BIN_URL = 'https://api.jsonbin.io/v3/b/' + BIN_ID;
-const GOAL = 436000; // pesos, 436 km
+const GOAL = 438000; // pesos, 438 km
 let current = 0;
 let lastAt = 0;
 
@@ -330,10 +330,10 @@ const bus         = document.getElementById('bus');
 function fmt(n){ return '$' + Math.round(n).toLocaleString('es-AR'); }
 
 function render(){
-  const km  = Math.min(436, Math.round(current / 1000));
+  const km  = Math.min(438, Math.round(current / 1000));
   const pct = Math.min(100, (current / GOAL) * 100);
   raisedValue.textContent = fmt(current);
-  raisedSub.textContent   = km.toLocaleString('es-AR') + ' km de 436 km — ¡vamos que se puede!';
+  raisedSub.textContent   = km.toLocaleString('es-AR') + ' km de 438 km — ¡vamos que se puede!';
   bus.style.left = 'calc(' + pct + '% - ' + (pct * 0.64) + 'px)';
 }
 
